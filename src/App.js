@@ -2,14 +2,16 @@ import React from 'react';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <p>
-          Hello World.
-        </p>
-      </header>
-    </div>
+    <h1 className="App">
+      Hello World.
+  </h1 >
   );
+
+  /*return React.createElement(
+    "h1",
+    null,
+    "Hello, World!!"
+  );*/
 }
 
 export default App;
