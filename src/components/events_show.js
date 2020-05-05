@@ -4,13 +4,22 @@ import { connect } from 'react-redux'
 import { Field, reduxForm } from 'redux-form'
 // ルーティングを行うパッケージreact-router-dom
 import { Link } from 'react-router-dom'
-import { postEvent } from '../actions'
+// 更新はputEvent
+import { getEvent, deleteEvent, putEvent } from '../actions'
 
-class EventsNew extends Component {
+class EventsShow extends Component {
 	constructor(props) {
 		super(props)
 		this.onSubmit = this.onSubmit.bind(this)
+		this.onDeleteClick = this.onDeleteClick.bind(this)
 	}
+
+	//
+	componentDidMount() {
+		const { id } = this.props.match.params
+		if (id) this.props.getEvent(id)
+	}
+
 	// renderFieldでinputタブの実装を行なっている
 	// meta のtouched, errorはredux-form特有のもの
 	// touchedは一度でもタッチされたら
@@ -27,31 +36,34 @@ class EventsNew extends Component {
 	}
 
 	async onSubmit(values) {
-		// 外部のアクションで定義したアクションクリエイターを呼び出して、その応答を持って↓
-		await this.props.postEvent(values)
-		// historyに履歴を追加している
+		await this.props.putEvent(values)
 		this.props.history.push('/')
 	}
 
-	render() {
-		// renderが実行された時に１番に実行する
+	async onDeleteClick() {
+		const { id } = this.props.match.params
+		await this.props.deleteEvent(id)
 		// pristine 未入力状態でsubmitを押下できないようにする
 		// submitting　submitが押下されるとtrueになる
-		const { handleSubmit, pristine, submitting, invalid } = this.props
+		this.props.history.push('/')
+	}
+	render() {
+		const { handleSubmit, pristine, submitting } = this.props
+
 		return (
 			<form onSubmit={handleSubmit(this.onSubmit)}>
 				<div><Field label='title' name="title" type="text" component={this.renderField} /></div>
 				<div><Field label='body' name="body" type="text" component={this.renderField} /></div>
 
 				<div>
-					<input type="submit" value="Submit" disabled={pristine || submitting || invalid} />
+					<input type="submit" value="Submit" disabled={pristine || submitting} />
 					{/* 一覧画面に戻る */}
 					<Link to="/">Cancel</Link>
+					<Link to="/" onClick={this.onDeleteClick} >Delete</Link>
 				</div>
 			</form >
 		)
 	}
-
 }
 // validationを定義
 const validate = values => {
@@ -63,8 +75,17 @@ const validate = values => {
 	// errorsに入れて返す関数
 	return errors
 }
-const mapDispatchToProps = ({ postEvent })
 
-export default connect(null, mapDispatchToProps)(
-	reduxForm({ validate, form: 'eventNewForm' })(EventsNew)
+// reducer側のイベント情報をbindする
+// 現時点のstate
+// コンポーネントが持っているprops
+const mapStateToProps = (state, ownProps) => {
+	const event = state.events[ownProps.match.params.id]
+	return { initialValues: event, event }
+}
+
+const mapDispatchToProps = ({ deleteEvent, getEvent, putEvent })
+
+export default connect(mapStateToProps, mapDispatchToProps)(
+	reduxForm({ validate, form: 'eventShowForm', enableReinitialize: true })(EventsShow)
 )
