@@ -36,14 +36,16 @@ class EventsNew extends Component {
 
 	render() {
 		// renderが実行された時に１番に実行する
-		const { handleSubmit } = this.props
+		// pristine 未入力状態でsubmitを押下できないようにする
+		// submitting　submitが押下されるとtrueになる
+		const { handleSubmit, pristine, submitting } = this.props
 		return (
 			<form onSubmit={handleSubmit(this.onSubmit)}>
 				<div><Field label='title' name="title" type="text" component={this.renderField} /></div>
 				<div><Field label='body' name="body" type="text" component={this.renderField} /></div>
 
 				<div>
-					<input type="submit" value="Submit" disabled={false} />
+					<input type="submit" value="Submit" disabled={pristine || submitting} />
 					{/* 一覧画面に戻る */}
 					<Link to="/">Cancel</Link>
 				</div>
